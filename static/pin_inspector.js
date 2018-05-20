@@ -129,8 +129,8 @@ function PinInspector(tray) {
             connected_loop:
             for (let c of connected_pins) {
                 for (let u of disconnected_pins) {
-                    var dx = Math.abs(c.getAttribute("cx") - u.getAttribute("cx"));
-                    var dy = Math.abs(c.getAttribute("cy") - u.getAttribute("cy"));
+                    var dx = c.getAttribute("cx") - u.getAttribute("cx");
+                    var dy = c.getAttribute("cy") - u.getAttribute("cy");
                     var dist = Math.sqrt(dx*dx+dy*dy);
                     if (dist < min_dist) {
                         min_dist = dist;

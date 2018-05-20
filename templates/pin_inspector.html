@@ -1,18 +1,47 @@
 <html>
     <head>
-        <title>AGC Pin Inspector v0.1</title>
+        <title>AGC Pin Inspector v0.2</title>
         <link rel="stylesheet" href="/static/pin_inspector.css">
         <script src="/static/pin_inspector.js"></script>
         <script src="/static/svg-pan-zoom.js"></script>
+        <script type="text/javascript">
+            function setup_trays() {
+                tray_a_inspector = new PinInspector(document.getElementById('tray_a'));
+                tray_b_inspector = new PinInspector(document.getElementById('tray_b'));
+                svgPanZoom('#tray_a', {zoomEnabled: true, controlIconsEnabled: true});
+                svgPanZoom('#tray_b', {zoomEnabled: true, controlIconsEnabled: true});
+            }
+
+            function select_tab(evt, tab) {
+                var tab_displays = document.getElementsByClassName("display");
+                for (var i = 0; i < tab_displays.length; i++) {
+                    tab_displays[i].className = tab_displays[i].className.replace(" active", "");
+                }
+
+                var tabs = document.getElementsByClassName("tab");
+                for (var i = 0; i < tabs.length; i++) {
+                    tabs[i].className = tabs[i].className.replace(" active", "");
+                }
+
+                document.getElementById(tab).className += " active";
+                evt.currentTarget.className += " active";
+            }
+        </script>
     </head>
-    <body onload="pin_inspector = new PinInspector(document.getElementById('tray_a')); svgPanZoom('#tray_a', {zoomEnabled: true, controlIconsEnabled: true});">
+    <body onload="setup_trays();">
         <div class="top_bar">
             <div class="title">AGC Pin Inspector v0.1</div>
-            <!--<a class="active" href="#tray_a">Tray A</a>-->
+            <button class="tab active"   onClick="select_tab(event, 'tab_a')">Tray A</a>
+            <button class="tab" onClick="select_tab(event, 'tab_b')">Tray B</a>
         </div>
         <div class="contents">
-            <div class="display">
+            <div id="tab_a" class="display active">
                 <object id="tray_a" type="image/svg+xml" data="/static/agc_tray_a.svg">
+                    Your browser does not support SVG
+                </object>
+            </div>
+            <div id="tab_b" class="display">
+                <object id="tray_b" type="image/svg+xml" data="/static/agc_tray_b.svg">
                     Your browser does not support SVG
                 </object>
             </div>
