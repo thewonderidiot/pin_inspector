@@ -27,7 +27,7 @@ def get_pin_info(conn, pin):
     pin_data['iotype'] = iotype
     pin_data['connections'] = []
 
-    if net is not None and iotype not in ["SPARE", "NC"]:
+    if net is not None and iotype not in ["SPARE", "NC", "UNK"]:
         for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET="%s" AND NOT ((IOTYPE="NC") OR (CONNECTOR="%s" AND PIN=%u))' % (net, conn, pin)):
             pin_data['connections'].append({'connector': net_conn, 'pin': net_pin})
         res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET="%s"' % net)
@@ -42,9 +42,11 @@ def get_pin_classes(tray):
 
     pin_classes = {}
     pin_classes['pin_classes'] = []
-    for conn, pin, net, iotype in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE FROM PINS WHERE CONNECTOR LIKE "%s%%"' % tray):
-        if iotype in ['NC', 'SPARE']:
+    for conn, pin, net, iotype, notes in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE, NOTES FROM PINS WHERE CONNECTOR LIKE "%s%%"' % tray):
+        if iotype in ['NC', 'SPARE', "UNK"]:
             pin_class = iotype
+        elif "@GUESS" in notes:
+            pin_class = "UNK"
         elif net in ['+4VDC', '+4SW', 'BPLUS', 'BPLSSW', 'FAP']:
             pin_class = net
         elif net.startswith('CG'+tray) or net in ['0VDCA', '0VDC']:

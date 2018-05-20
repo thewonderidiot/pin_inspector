@@ -15,6 +15,7 @@ function PinInspector(tray) {
         "BPLSSW": "#8B4000",
         "FAP": "yellow",
         "DATA": "#8090FF",
+        "UNK": "#FF80D0",
     }
 
     var io_types = {
@@ -25,6 +26,7 @@ function PinInspector(tray) {
         "INOUT": "Input/output",
         "FIX": "Fan-in",
         "FOX": "Fan-out",
+        "UNK": "Unknown",
     }
 
     var svg = null;
@@ -65,9 +67,9 @@ function PinInspector(tray) {
         var radius = pin.getAttribute("r");
         pin.setAttribute("r", radius/1.2);
 
-        var stroke_width = parseFloat(pin.style["stroke-width"]);
-        pin.style["stroke-width"] = (stroke_width / 3) + "px";
-        pin.style["stroke"] = "#000000";
+        var stroke_width = parseFloat(pin.getAttribute("stroke-width"));
+        pin.setAttribute("stroke-width", (stroke_width / 3).toString());
+        pin.setAttribute("stroke", "#000000");
 
         selected_pin = null;
     }
@@ -82,9 +84,9 @@ function PinInspector(tray) {
         var radius = pin.getAttribute("r");
         pin.setAttribute("r", radius*1.2);
 
-        var stroke_width = parseFloat(pin.style["stroke-width"]);
-        pin.style["stroke-width"] = (stroke_width * 3) + "px";
-        pin.style["stroke"] = "#3282A7";
+        var stroke_width = parseFloat(pin.getAttribute("stroke-width"));
+        pin.setAttribute("stroke-width", (stroke_width * 3).toString());
+        pin.setAttribute("stroke", "#3282A7");
 
         selected_pin = pin;
     }
@@ -117,6 +119,8 @@ function PinInspector(tray) {
         var pin_layer = svg.getElementById("pins");
         var total_wires = disconnected_pins.size;
 
+        var stroke_width = (parseFloat(pin.getAttribute("stroke-width")) / 2).toString();
+
         for (k = 0; k < total_wires; k++)
         {
             var min_dist = 99999;
@@ -146,7 +150,8 @@ function PinInspector(tray) {
             conn_line.setAttribute("y1", closest_connected.getAttribute("cy"));
             conn_line.setAttribute("x2", closest_disconnected.getAttribute("cx"));
             conn_line.setAttribute("y2", closest_disconnected.getAttribute("cy"));
-            conn_line.setAttribute("stroke", "black");
+            conn_line.setAttribute("stroke", "#000000");
+            conn_line.setAttribute("stroke-width", stroke_width);
             pin_layer.append(conn_line);
             lines.add(conn_line);
             connected_pins.add(closest_disconnected);
