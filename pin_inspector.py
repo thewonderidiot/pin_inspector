@@ -48,7 +48,7 @@ def get_pin_classes(tray):
         elif net in ['+4VDC', '+4SW', 'BPLUS', 'BPLSSW', 'FAP']:
             pin_class = net
         elif net.startswith('CG'+tray) or net in ['0VDCA', '0VDC']:
-            pin_class = '0VDCA'
+            pin_class = '0VDC'
         else:
             pin_class = 'DATA'
 

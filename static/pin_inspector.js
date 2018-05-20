@@ -3,9 +3,10 @@ function PinInspector(tray) {
     var selected_pin = null;
     var connected_pins = new Set();
     var lines = new Set();
+    var tray_letter = tray.id.slice(-1).toUpperCase();
 
     var pin_class_colors = {
-        "0VDCA": "#444444",
+        "0VDC": "#444444",
         "NC": "#E8E8E8",
         "SPARE": "#FFFFFF",
         "+4SW": "red",
@@ -37,7 +38,7 @@ function PinInspector(tray) {
     svg.documentElement.addEventListener("mouseup", tray_mouse_up, false);
 
 
-    fetch('/pins/pin_classes/A')
+    fetch('/pins/pin_classes/'+tray_letter)
         .then(function(response) {
             return response.json();
         })
@@ -88,7 +89,7 @@ function PinInspector(tray) {
         selected_pin = pin;
     }
 
-    function unconnect_pins() {
+    function disconnect_pins() {
         var pin_layer = svg.getElementById("pins");
         for (let l of lines) {
             pin_layer.removeChild(l);
@@ -103,31 +104,34 @@ function PinInspector(tray) {
 
     function connect_pins(pin, connections) {
         connected_pins.add(pin);
-        var unconnected_pins = new Set();
+        var disconnected_pins = new Set();
 
         for (var i = 0; i < connections.length; i++) {
             var target_info = connections[i];
             var target_id = target_info["connector"] + "_" + target_info["pin"];
-            unconnected_pins.add(svg.getElementById(target_id));
+            if (target_id[0] == tray_letter) {
+                disconnected_pins.add(svg.getElementById(target_id));
+            }
         }
 
         var pin_layer = svg.getElementById("pins");
+        var total_wires = disconnected_pins.size;
 
-        for (k = 0; k < connections.length; k++)
+        for (k = 0; k < total_wires; k++)
         {
             var min_dist = 99999;
             var closest_connected = null;
-            var closest_unconnected = null;
+            var closest_disconnected = null;
             connected_loop:
             for (let c of connected_pins) {
-                for (let u of unconnected_pins) {
+                for (let u of disconnected_pins) {
                     var dx = Math.abs(c.getAttribute("cx") - u.getAttribute("cx"));
                     var dy = Math.abs(c.getAttribute("cy") - u.getAttribute("cy"));
                     var dist = Math.sqrt(dx*dx+dy*dy);
                     if (dist < min_dist) {
                         min_dist = dist;
                         closest_connected = c;
-                        closest_unconnected = u;
+                        closest_disconnected = u;
 
                         if (dist < 12) {
                             break connected_loop;
@@ -140,13 +144,13 @@ function PinInspector(tray) {
             conn_line.setAttribute("id", "line"+k);
             conn_line.setAttribute("x1", closest_connected.getAttribute("cx"));
             conn_line.setAttribute("y1", closest_connected.getAttribute("cy"));
-            conn_line.setAttribute("x2", closest_unconnected.getAttribute("cx"));
-            conn_line.setAttribute("y2", closest_unconnected.getAttribute("cy"));
+            conn_line.setAttribute("x2", closest_disconnected.getAttribute("cx"));
+            conn_line.setAttribute("y2", closest_disconnected.getAttribute("cy"));
             conn_line.setAttribute("stroke", "black");
             pin_layer.append(conn_line);
             lines.add(conn_line);
-            connected_pins.add(closest_unconnected);
-            unconnected_pins.delete(closest_unconnected);
+            connected_pins.add(closest_disconnected);
+            disconnected_pins.delete(closest_disconnected);
         }
 
         for (let c of connected_pins)
@@ -191,10 +195,8 @@ function PinInspector(tray) {
                     document.getElementById("net_text").innerHTML = net;
                     document.getElementById("desc_text").innerHTML = description;
 
-                    unconnect_pins();
-                    //if (["0VDC", "0VDCA", "+4SW", "+4VDC", "BPLUS", "BPLSSW"].indexOf(net) < 0) {
-                        connect_pins(pin, result["connections"]);
-                    //}
+                    disconnect_pins();
+                    connect_pins(pin, result["connections"]);
                 });
         }
     }
