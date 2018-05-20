@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <title>AGC Pin Inspector v0.1</title>
+        <link rel="stylesheet" href="/static/pin_inspector.css">
+        <script src="/static/pin_inspector.js"></script>
+        <script src="/static/svg-pan-zoom.js"></script>
+    </head>
+    <body onload="pin_inspector = new PinInspector(document.getElementById('tray_a')); svgPanZoom('#tray_a', {zoomEnabled: true, controlIconsEnabled: true});">
+        <div class="top_bar">
+            <div class="title">AGC Pin Inspector v0.1</div>
+            <!--<a class="active" href="#tray_a">Tray A</a>-->
+        </div>
+        <div class="contents">
+            <div class="display">
+                <object id="tray_a" type="image/svg+xml" data="/static/agc_tray_a.svg">
+                    Your browser does not support SVG
+                </object>
+            </div>
+            <div class="info_box">
+                <div class="pin_info">
+                    <div class="info_header">
+                        Connector
+                    </div>
+                    <div id="conn_text" class="info_text">
+                        -
+                    </div>
+                </div>
+                <div class="pin_info">
+                    <div class="info_header">
+                        Pin
+                    </div>
+                    <div id="pin_text" class="info_text">
+                        -
+                    </div>
+                </div>
+                <div class="io_info">
+                    <div class="info_header">
+                        I/O Type
+                    </div>
+                    <div class="info_text" id="io_text">
+                        -
+                    </div>
+                </div>
+                <div class="net_info">
+                    <div class="info_header">
+                        Net
+                    </div>
+                    <div id="net_text" class="info_text">
+                        -
+                    </div>
+                    <div class="net_desc" id="desc_text">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
