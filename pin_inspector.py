@@ -43,10 +43,10 @@ def get_pin_classes(tray):
     pin_classes = {}
     pin_classes['pin_classes'] = []
     for conn, pin, net, iotype, notes in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE, NOTES FROM PINS WHERE CONNECTOR LIKE "%s%%"' % tray):
-        if iotype in ['NC', 'SPARE', "UNK"]:
-            pin_class = iotype
-        elif "@GUESS" in notes:
+        if iotype == 'UNK' or (notes is not None and "@GUESS" in notes):
             pin_class = "UNK"
+        elif iotype in ['NC', 'SPARE', 'BP']:
+            pin_class = iotype
         elif net in ['+4VDC', '+4SW', 'BPLUS', 'BPLSSW', 'FAP']:
             pin_class = net
         elif net.startswith('CG'+tray) or net in ['0VDCA', '0VDC']:

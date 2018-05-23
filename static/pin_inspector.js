@@ -16,6 +16,7 @@ function PinInspector(tray) {
         "FAP": "yellow",
         "DATA": "#8090FF",
         "UNK": "#FF80D0",
+        "BP": "#108010",
     }
 
     var io_types = {
@@ -27,6 +28,7 @@ function PinInspector(tray) {
         "FIX": "Fan-in",
         "FOX": "Fan-out",
         "UNK": "Unknown",
+        "BP": "Backplane",
     }
 
     var svg = null;
@@ -89,6 +91,30 @@ function PinInspector(tray) {
         pin.setAttribute("stroke", "#3282A7");
 
         selected_pin = pin;
+
+        var pin_num = pin.id.split("_");
+        document.getElementById("conn_text").innerHTML = pin_num[0];
+        document.getElementById("pin_text").innerHTML = pin_num[1];
+
+        fetch('/pins/pin/'+pin_num[0]+'/'+pin_num[1])
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(result) {
+                var net = result["net"]["name"];
+                var description = "";
+                if (net == null) {
+                    net = "-";
+                } else {
+                    description = result["net"]["description"];
+                }
+                document.getElementById("io_text").innerHTML = io_types[result["iotype"]];
+                document.getElementById("net_text").innerHTML = net;
+                document.getElementById("desc_text").innerHTML = description;
+
+                disconnect_pins();
+                connect_pins(pin, result["connections"]);
+            });
     }
 
     function disconnect_pins() {
@@ -132,6 +158,10 @@ function PinInspector(tray) {
                     var dx = c.getAttribute("cx") - u.getAttribute("cx");
                     var dy = c.getAttribute("cy") - u.getAttribute("cy");
                     var dist = Math.sqrt(dx*dx+dy*dy);
+                    if ((c.id.match(/B[1-6]_/) && !u.id.match(/B4?[1-6]_/)) ||
+                        (u.id.match(/B[1-6]_/) && !c.id.match(/B4?[1-6]_/))) {
+                        dist += 99999;
+                    }
                     if (dist < min_dist) {
                         min_dist = dist;
                         closest_connected = c;
@@ -180,29 +210,20 @@ function PinInspector(tray) {
         if (pin.id.match(/[AB]\d\d?_\d\d\d/)) {
             select_pin(pin);
 
-            var pin_num = pin.id.split("_");
-            document.getElementById("conn_text").innerHTML = pin_num[0];
-            document.getElementById("pin_text").innerHTML = pin_num[1];
+        }
+    }
 
-            fetch('/pins/pin/'+pin_num[0]+'/'+pin_num[1])
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(result) {
-                    var net = result["net"]["name"];
-                    var description = "";
-                    if (net == null) {
-                        net = "-";
-                    } else {
-                        description = result["net"]["description"];
-                    }
-                    document.getElementById("io_text").innerHTML = io_types[result["iotype"]];
-                    document.getElementById("net_text").innerHTML = net;
-                    document.getElementById("desc_text").innerHTML = description;
-
-                    disconnect_pins();
-                    connect_pins(pin, result["connections"]);
-                });
+    return {
+        select_pin_by_id : function(pin_id) {
+            select_pin(svg.getElementById(pin_id));
+        },
+        get_selected_intertray_pin : function() {
+            for (let p of connected_pins) {
+                if (p.id.match(/[AB]6[1-3]/)) {
+                    return p.id;
+                }
+            }
+            return null;
         }
     }
 }

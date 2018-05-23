@@ -1,10 +1,14 @@
 <html>
     <head>
-        <title>AGC Pin Inspector v0.2</title>
+        <title>AGC Pin Inspector v0.3</title>
         <link rel="stylesheet" href="/static/pin_inspector.css">
         <script src="/static/pin_inspector.js"></script>
         <script src="/static/svg-pan-zoom.js"></script>
         <script type="text/javascript">
+            var tray_a_inspector;
+            var tray_b_inspector;
+            var active_tab = 'tab_a';
+
             function setup_trays() {
                 tray_a_inspector = new PinInspector(document.getElementById('tray_a'));
                 tray_b_inspector = new PinInspector(document.getElementById('tray_b'));
@@ -12,7 +16,37 @@
                 svgPanZoom('#tray_b', {zoomEnabled: true, controlIconsEnabled: true});
             }
 
+            function traverse_intertray(tab) {
+                var from_inspector;
+                var to_inspector;
+                var to_letter;
+                if (active_tab == tab) {
+                    return;
+                }
+                active_tab = tab;
+
+                if (tab == 'tab_a') {
+                    from_inspector = tray_b_inspector;
+                    to_inspector = tray_a_inspector;
+                    to_letter = 'A';
+                } else {
+                    from_inspector = tray_a_inspector;
+                    to_inspector = tray_b_inspector;
+                    to_letter = 'B';
+                }
+
+                var intertray_pin = from_inspector.get_selected_intertray_pin();
+                if (intertray_pin == null) {
+                    return;
+                }
+
+                intertray_pin = to_letter + intertray_pin.substring(1);
+                to_inspector.select_pin_by_id(intertray_pin);
+            }
+
             function select_tab(evt, tab) {
+                traverse_intertray(tab);
+
                 var tab_displays = document.getElementsByClassName("display");
                 for (var i = 0; i < tab_displays.length; i++) {
                     tab_displays[i].className = tab_displays[i].className.replace(" active", "");
@@ -30,7 +64,7 @@
     </head>
     <body onload="setup_trays();">
         <div class="top_bar">
-            <div class="title">AGC Pin Inspector v0.1</div>
+            <div class="title">AGC Pin Inspector v0.3</div>
             <button class="tab active"   onClick="select_tab(event, 'tab_a')">Tray A</a>
             <button class="tab" onClick="select_tab(event, 'tab_b')">Tray B</a>
         </div>
