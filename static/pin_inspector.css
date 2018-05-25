@@ -99,7 +99,15 @@
 
 .info_text {
     font-size: 50px;
+    font-weight: bold;
+    font-family: inherit;
     margin-top: -10;
+    background-color: inherit;
+    outline: none;
+    text-align: center;
+    width: 100%;
+    border-width: 0;
+    border: none;
 }
 
 .net_desc {

@@ -58,3 +58,23 @@ def get_pin_classes(tray):
 
     return json.dumps(pin_classes)
 
+@app.route('/pins/net/<path:net>')
+def get_net_pins(net):
+    delphi = sqlite3.connect('delphi.db')
+    c = delphi.cursor()
+
+    net_data = {
+        'description': '',
+        'connections': [],
+    }
+
+    res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET="%s"' % net).fetchone()
+    if res is not None:
+        net_data['description'] = res[0]
+        net_data['connections'] = []
+
+        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET="%s" AND NOT IOTYPE="NC"' % (net)):
+            net_data['connections'].append({'connector': net_conn, 'pin': net_pin})
+
+    return json.dumps(net_data)
+

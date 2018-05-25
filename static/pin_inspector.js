@@ -4,6 +4,10 @@ function PinInspector(tray) {
     var connected_pins = new Set();
     var lines = new Set();
     var tray_letter = tray.id.slice(-1).toUpperCase();
+    var current_net = '-';
+    var current_conn = '-';
+    var current_pin = '-';
+    var current_type = '-';
 
     var pin_class_colors = {
         "0VDC": "#444444",
@@ -93,8 +97,8 @@ function PinInspector(tray) {
         selected_pin = pin;
 
         var pin_num = pin.id.split("_");
-        document.getElementById("conn_text").innerHTML = pin_num[0];
-        document.getElementById("pin_text").innerHTML = pin_num[1];
+        current_conn = pin_num[0];
+        current_pin = pin_num[1];
 
         fetch('/pins/pin/'+pin_num[0]+'/'+pin_num[1])
             .then(function(response) {
@@ -108,10 +112,11 @@ function PinInspector(tray) {
                 } else {
                     description = result["net"]["description"];
                 }
-                document.getElementById("io_text").innerHTML = io_types[result["iotype"]];
-                document.getElementById("net_text").innerHTML = net;
-                document.getElementById("desc_text").innerHTML = description;
+                current_net = net;
+                current_type = io_types[result['iotype']];
+                current_desc = description;
 
+                populate_info();
                 disconnect_pins();
                 connect_pins(pin, result["connections"]);
             });
@@ -198,6 +203,14 @@ function PinInspector(tray) {
         }
     }
 
+    function populate_info() {
+        document.getElementById("conn_text").innerHTML = current_conn;
+        document.getElementById("pin_text").innerHTML = current_pin;
+        document.getElementById("io_text").innerHTML = current_type;
+        document.getElementById("net_text").value = current_net;
+        document.getElementById("desc_text").innerHTML = current_desc;
+    }
+
     function tray_mouse_up(evt) {
         var dx = Math.abs(mouse_down_evt.clientX  - evt.clientX);
         var dy = Math.abs(mouse_down_evt.clientY  - evt.clientY);
@@ -209,7 +222,6 @@ function PinInspector(tray) {
         pin = evt.target;
         if (pin.id.match(/[AB]\d\d?_\d\d\d/)) {
             select_pin(pin);
-
         }
     }
 
@@ -217,6 +229,7 @@ function PinInspector(tray) {
         select_pin_by_id : function(pin_id) {
             select_pin(svg.getElementById(pin_id));
         },
+
         get_selected_intertray_pin : function() {
             for (let p of connected_pins) {
                 if (p.id.match(/[AB]6[1-3]/)) {
@@ -224,6 +237,26 @@ function PinInspector(tray) {
                 }
             }
             return null;
+        },
+        
+        locate_net : function(net) {
+            fetch('/pins/net/'+net)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(result) {
+                    for (let c of result.connections) {
+                        if (c.connector[0] == tray_letter) {
+                            select_pin(svg.getElementById(c.connector + "_" + c.pin));
+                            return;
+                        }
+                    }
+                    document.getElementById("net_text").value = current_net;
+                });
+        },
+
+        update_info : function() {
+            populate_info();
         }
     }
 }
