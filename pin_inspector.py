@@ -73,7 +73,7 @@ def get_net_pins(net):
         net_data['description'] = res[0]
         net_data['connections'] = []
 
-        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET="%s" AND NOT IOTYPE="NC"' % (net)):
+        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET="%s" AND NOT IOTYPE="SPARE"' % (net)):
             net_data['connections'].append({'connector': net_conn, 'pin': net_pin})
 
     return json.dumps(net_data)

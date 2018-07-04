@@ -8,6 +8,7 @@ function PinInspector(tray) {
     var current_conn = '-';
     var current_pin = '-';
     var current_type = '-';
+    var current_desc = '';
 
     var pin_class_colors = {
         "0VDC": "#444444",
