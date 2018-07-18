@@ -164,6 +164,8 @@ function PinInspector(tray) {
                     var dx = c.getAttribute("cx") - u.getAttribute("cx");
                     var dy = c.getAttribute("cy") - u.getAttribute("cy");
                     var dist = Math.sqrt(dx*dx+dy*dy);
+                    var id_parts = c.id.split('_');
+                    dist += 0.01*id_parts[0].slice(1) + 0.00001*id_parts[1];
                     if ((c.id.match(/B[1-6]_/) && !u.id.match(/B4?[1-6]_/)) ||
                         (u.id.match(/B[1-6]_/) && !c.id.match(/B4?[1-6]_/))) {
                         dist += 99999;
@@ -241,7 +243,7 @@ function PinInspector(tray) {
         },
         
         locate_net : function(net) {
-            fetch('/pins/net/'+net)
+            fetch('/pins/net/'+net.toUpperCase())
                 .then(function(response) {
                     return response.json();
                 })

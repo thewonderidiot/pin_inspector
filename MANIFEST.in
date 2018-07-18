@@ -1,0 +1,2 @@
+recursive-include agc_pins/templates *
+recursive-include agc_pins/static *

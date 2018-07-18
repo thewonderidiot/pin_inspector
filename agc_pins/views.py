@@ -1,7 +1,20 @@
-from flask import Flask, render_template
+from flask import render_template, g
 import sqlite3
 import json
-app = Flask(__name__)
+
+from agc_pins import app
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(app.config['delphi'])
+    return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 @app.route('/')
 def index():
@@ -13,9 +26,8 @@ def pin_inspector():
 
 @app.route('/pins/pin/<conn>/<int:pin>')
 def get_pin_info(conn, pin):
-    delphi = sqlite3.connect('delphi.db')
-    c = delphi.cursor()
-    res = c.execute('SELECT IOTYPE, NET FROM PINS WHERE CONNECTOR="%s" AND PIN=%u' % (conn, pin))
+    c = get_db().cursor()
+    res = c.execute('SELECT IOTYPE, NET FROM PINS WHERE CONNECTOR=? AND PIN=?', (conn, pin))
     try:
         iotype, net = res.fetchone()
     except:
@@ -28,21 +40,20 @@ def get_pin_info(conn, pin):
     pin_data['connections'] = []
 
     if net is not None and iotype not in ["SPARE", "NC", "UNK"]:
-        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET="%s" AND NOT ((IOTYPE="NC") OR (CONNECTOR="%s" AND PIN=%u))' % (net, conn, pin)):
+        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET=? AND NOT ((IOTYPE="NC") OR (CONNECTOR=? AND PIN=?))', (net, conn, pin)):
             pin_data['connections'].append({'connector': net_conn, 'pin': net_pin})
-        res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET="%s"' % net)
+        res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET=?', (net,))
         pin_data['net']['description'] = res.fetchone()[0]
 
     return json.dumps(pin_data)
 
 @app.route('/pins/pin_classes/<tray>')
 def get_pin_classes(tray):
-    delphi = sqlite3.connect('delphi.db')
-    c = delphi.cursor()
+    c = get_db().cursor()
 
     pin_classes = {}
     pin_classes['pin_classes'] = []
-    for conn, pin, net, iotype, notes in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE, NOTES FROM PINS WHERE CONNECTOR LIKE "%s%%"' % tray):
+    for conn, pin, net, iotype, notes in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE, NOTES FROM PINS WHERE CONNECTOR LIKE ?', (tray+'%',)):
         if iotype == 'UNK' or (notes is not None and "@GUESS" in notes):
             pin_class = "UNK"
         elif iotype in ['NC', 'SPARE', 'BP']:
@@ -60,20 +71,19 @@ def get_pin_classes(tray):
 
 @app.route('/pins/net/<path:net>')
 def get_net_pins(net):
-    delphi = sqlite3.connect('delphi.db')
-    c = delphi.cursor()
+    c = get_db().cursor()
 
     net_data = {
         'description': '',
         'connections': [],
     }
 
-    res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET="%s"' % net).fetchone()
+    res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET=?', (net,)).fetchone()
     if res is not None:
         net_data['description'] = res[0]
         net_data['connections'] = []
 
-        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET="%s" AND NOT IOTYPE="SPARE"' % (net)):
+        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET=? AND NOT IOTYPE="SPARE"', (net,)):
             net_data['connections'].append({'connector': net_conn, 'pin': net_pin})
 
     return json.dumps(net_data)
