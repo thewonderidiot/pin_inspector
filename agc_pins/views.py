@@ -18,7 +18,7 @@ def close_connection(exception):
 
 @app.route('/')
 def index():
-    return 'Hello world'
+    return '<html><head><title>Apollo Replica Guidance Hardware</title></head><body><h1>Apollo Replica Guidance Hardware</h1><a href="/pins">AGC Backplane Viewer</a></body></html>'
 
 @app.route('/pins')
 def pin_inspector():
