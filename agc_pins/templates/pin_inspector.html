@@ -1,9 +1,9 @@
 <html>
     <head>
-        <title>AGC Backplane Viewer v1.0</title>
-        <link rel="stylesheet" href="/static/pin_inspector.css">
-        <script src="/static/pin_inspector.js"></script>
-        <script src="/static/svg-pan-zoom.js"></script>
+        <title>AGC Backplane Viewer v1.1</title>
+        <link rel="stylesheet" href="static/pin_inspector.css">
+        <script src="static/pin_inspector.js"></script>
+        <script src="static/svg-pan-zoom.js"></script>
         <script type="text/javascript">
             var inspectors;
             var active = 'a';
@@ -62,18 +62,18 @@
     </head>
     <body onload="setup_trays();">
         <div class="top_bar">
-            <div class="title">AGC Backplane Viewer v1.0</div>
+            <div class="title">AGC Backplane Viewer v1.1</div>
             <button class="tab active"   onClick="select_tab(event, 'tab_a')">Tray A</a>
             <button class="tab" onClick="select_tab(event, 'tab_b')">Tray B</a>
         </div>
         <div class="contents">
             <div id="tab_a" class="display active">
-                <object id="tray_a" type="image/svg+xml" data="/static/agc_tray_a.svg">
+                <object id="tray_a" type="image/svg+xml" data="static/agc_tray_a.svg">
                     Your browser does not support SVG
                 </object>
             </div>
             <div id="tab_b" class="display">
-                <object id="tray_b" type="image/svg+xml" data="/static/agc_tray_b.svg">
+                <object id="tray_b" type="image/svg+xml" data="static/{{tray_b_svg}}">
                     Your browser does not support SVG
                 </object>
             </div>

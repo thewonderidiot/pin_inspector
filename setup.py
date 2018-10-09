@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='agc_pins',
-    version='1.0',
+    version='1.1',
     description='AGC Backplane Pin Tool',
     author='Mike Stewart',
     author_email='mastewar1@gmail.com',

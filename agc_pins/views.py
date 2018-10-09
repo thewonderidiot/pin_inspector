@@ -18,16 +18,16 @@ def close_connection(exception):
 
 @app.route('/')
 def index():
-    return '<html><head><title>Apollo Replica Guidance Hardware</title></head><body><h1>Apollo Replica Guidance Hardware</h1><a href="/pins">AGC Backplane Viewer</a></body></html>'
+    return '<html><head><title>Apollo Replica Guidance Hardware</title></head><body><h1>Apollo Replica Guidance Hardware</h1><a href="pins">AGC Backplane Viewer</a></body></html>'
 
 @app.route('/pins')
 def pin_inspector():
-    return render_template('pin_inspector.html')
+    return render_template('pin_inspector.html', tray_b_svg=app.config['tray_b_svg'])
 
 @app.route('/pins/pin/<conn>/<int:pin>')
 def get_pin_info(conn, pin):
     c = get_db().cursor()
-    res = c.execute('SELECT IOTYPE, NET FROM PINS WHERE CONNECTOR=? AND PIN=?', (conn, pin))
+    res = c.execute('SELECT IOTYPE, NET FROM %s WHERE CONNECTOR=? AND PIN=?' % app.config['pins_table'], (conn, pin))
     try:
         iotype, net = res.fetchone()
     except:
@@ -40,7 +40,7 @@ def get_pin_info(conn, pin):
     pin_data['connections'] = []
 
     if net is not None and iotype not in ["SPARE", "NC", "UNK"]:
-        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET=? AND NOT ((IOTYPE="NC") OR (CONNECTOR=? AND PIN=?))', (net, conn, pin)):
+        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM %s WHERE NET=? AND NOT ((IOTYPE="NC") OR (CONNECTOR=? AND PIN=?))' % app.config['pins_table'], (net, conn, pin)):
             pin_data['connections'].append({'connector': net_conn, 'pin': net_pin})
         res = c.execute('SELECT DESCRIPTION FROM NETS WHERE NET=?', (net,))
         pin_data['net']['description'] = res.fetchone()[0]
@@ -53,14 +53,14 @@ def get_pin_classes(tray):
 
     pin_classes = {}
     pin_classes['pin_classes'] = []
-    for conn, pin, net, iotype, notes in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE, NOTES FROM PINS WHERE CONNECTOR LIKE ?', (tray+'%',)):
+    for conn, pin, net, iotype, notes in c.execute('SELECT CONNECTOR, PIN, NET, IOTYPE, NOTES FROM %s WHERE CONNECTOR LIKE ?' % app.config['pins_table'], (tray+'%',)):
         if iotype == 'UNK' or (notes is not None and "@GUESS" in notes):
             pin_class = "UNK"
         elif iotype in ['NC', 'SPARE', 'BP']:
             pin_class = iotype
         elif net in ['+4VDC', '+4SW', 'BPLUS', 'BPLSSW', 'FAP']:
             pin_class = net
-        elif net.startswith('CG'+tray) or net in ['0VDCA', '0VDC']:
+        elif net.startswith('CG'+tray) or net in ['0VDCA', '0VDC', 'CG']:
             pin_class = '0VDC'
         else:
             pin_class = 'DATA'
@@ -83,7 +83,7 @@ def get_net_pins(net):
         net_data['description'] = res[0]
         net_data['connections'] = []
 
-        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM PINS WHERE NET=? AND NOT IOTYPE="SPARE"', (net,)):
+        for net_conn, net_pin in c.execute('SELECT CONNECTOR, PIN FROM %s WHERE NET=? AND NOT IOTYPE="SPARE"' % app.config['pins_table'], (net,)):
             net_data['connections'].append({'connector': net_conn, 'pin': net_pin})
 
     return json.dumps(net_data)

@@ -47,7 +47,7 @@ function PinInspector(tray) {
     svg.documentElement.addEventListener("mouseup", tray_mouse_up, false);
 
 
-    fetch('/pins/pin_classes/'+tray_letter)
+    fetch('pins/pin_classes/'+tray_letter)
         .then(function(response) {
             return response.json();
         })
@@ -101,7 +101,7 @@ function PinInspector(tray) {
         current_conn = pin_num[0];
         current_pin = pin_num[1];
 
-        fetch('/pins/pin/'+pin_num[0]+'/'+pin_num[1])
+        fetch('pins/pin/'+pin_num[0]+'/'+pin_num[1])
             .then(function(response) {
                 return response.json();
             })
@@ -243,7 +243,7 @@ function PinInspector(tray) {
         },
         
         locate_net : function(net) {
-            fetch('/pins/net/'+net.toUpperCase())
+            fetch('pins/net/'+net.toUpperCase())
                 .then(function(response) {
                     return response.json();
                 })
